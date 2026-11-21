@@ -22,15 +22,20 @@ func TestProcessMouseEvent_WheelCallsMsgFn(t *testing.T) {
 
 	tests := []struct {
 		button tea.MouseButton
+		mod    tea.KeyMod
 		want   testScrollMsg
 	}{
-		{tea.MouseWheelUp, testScrollMsg{Delta: -3}},
-		{tea.MouseWheelDown, testScrollMsg{Delta: 3}},
-		{tea.MouseWheelLeft, testScrollMsg{Delta: -3, Horizontal: true}},
-		{tea.MouseWheelRight, testScrollMsg{Delta: 3, Horizontal: true}},
+		{tea.MouseWheelUp, 0, testScrollMsg{Delta: -3}},
+		{tea.MouseWheelDown, 0, testScrollMsg{Delta: 3}},
+		{tea.MouseWheelLeft, 0, testScrollMsg{Delta: -3, Horizontal: true}},
+		{tea.MouseWheelRight, 0, testScrollMsg{Delta: 3, Horizontal: true}},
+		{tea.MouseWheelUp, tea.ModCtrl, testScrollMsg{Delta: -9}},
+		{tea.MouseWheelDown, tea.ModCtrl, testScrollMsg{Delta: 9}},
+		{tea.MouseWheelLeft, tea.ModCtrl, testScrollMsg{Delta: -9, Horizontal: true}},
+		{tea.MouseWheelRight, tea.ModCtrl, testScrollMsg{Delta: 9, Horizontal: true}},
 	}
 	for _, tt := range tests {
-		msg, handled := dl.ProcessMouseEvent(tea.MouseWheelMsg{X: 2, Y: 2, Button: tt.button})
+		msg, handled := dl.ProcessMouseEvent(tea.MouseWheelMsg{X: 2, Y: 2, Button: tt.button, Mod: tt.mod})
 		assert.True(t, handled)
 		assert.Equal(t, tt.want, msg)
 	}

@@ -25,17 +25,23 @@ type InteractionOp struct {
 }
 
 // WheelDelta converts a mouse wheel event into a scroll delta.
+// Holding down Ctrl increases the scroll distance.
 // It returns a zero delta for events that are not wheel scrolls.
 func WheelDelta(msg tea.MouseMsg) (delta int, horizontal bool) {
-	switch msg.Mouse().Button {
+	mouse := msg.Mouse()
+	distance := 3
+	if mouse.Mod&tea.ModCtrl != 0 {
+		distance *= 3
+	}
+	switch mouse.Button {
 	case tea.MouseWheelUp:
-		return -3, false
+		return -distance, false
 	case tea.MouseWheelDown:
-		return 3, false
+		return distance, false
 	case tea.MouseWheelLeft:
-		return -3, true
+		return -distance, true
 	case tea.MouseWheelRight:
-		return 3, true
+		return distance, true
 	}
 	return 0, false
 }
