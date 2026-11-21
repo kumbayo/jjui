@@ -315,3 +315,9 @@ func (RevisionsObjectCycleKind) isIntent() {}
 type RevisionsObjectAddToRevset struct{}
 
 func (RevisionsObjectAddToRevset) isIntent() {}
+
+//jjui:bind scope=revisions action=copy_focused
+//jjui:bind scope=revisions.details action=copy_focused
+type CopyFocused struct{}
+
+func (CopyFocused) isIntent() {}

@@ -56,6 +56,7 @@ var (
 )
 
 type Model struct {
+	clipboardWriter        func(string) error
 	rows                   []parser.Row
 	tag                    atomic.Uint64
 	pendingReload          revisionReloadState
@@ -958,6 +959,8 @@ func (m *Model) HandleIntent(intent intents.Intent) (tea.Cmd, bool) {
 	}
 
 	switch intent := intent.(type) {
+	case intents.CopyFocused:
+		return m.copyFocused(), true
 	case intents.OpenDetails:
 		return m.openDetails(intent), true
 	case intents.OpenSquash:

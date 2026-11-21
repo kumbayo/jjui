@@ -50,6 +50,7 @@ type FileChecks struct {
 }
 
 type Operation struct {
+	clipboardWriter func(string) error
 	*DetailsList
 	context      *context.MainContext
 	Current      *jj.Commit
@@ -196,6 +197,11 @@ func (s *Operation) HandleIntent(intent intents.Intent) (tea.Cmd, bool) {
 			return s.confirmation.Update(intent), true
 		}
 		return nil, false
+	case intents.CopyFocused:
+		if file := s.current(); file != nil {
+			return common.CopyText(file.fileName.Path(), s.clipboardWriter), true
+		}
+		return intents.Invoke(intents.AddMessage{Text: "Nothing to copy"}), true
 	case intents.DetailsNavigate:
 		s.navigate(intent.Delta, intent.IsPage)
 		return nil, true

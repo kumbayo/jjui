@@ -303,6 +303,8 @@ func ResolveIntent(scope string, action keybindings.Action, args map[string]any)
 			return intents.Cancel{}, true
 		case keybindings.Action("revisions.commit"):
 			return intents.CommitWorkingCopy{}, true
+		case keybindings.Action("revisions.copy_focused"):
+			return intents.CopyFocused{}, true
 		case keybindings.Action("revisions.describe"):
 			return intents.Describe{}, true
 		case keybindings.Action("revisions.diff"):
@@ -452,6 +454,8 @@ func ResolveIntent(scope string, action keybindings.Action, args map[string]any)
 			return intents.DetailsAddToRevset{}, true
 		case keybindings.Action("revisions.details.cancel"):
 			return intents.DetailsClose{}, true
+		case keybindings.Action("revisions.details.copy_focused"):
+			return intents.CopyFocused{}, true
 		case keybindings.Action("revisions.details.diff"):
 			return intents.DetailsDiff{}, true
 		case keybindings.Action("revisions.details.filter"):

@@ -123,7 +123,12 @@ func SetDescription(revision string, description string, ignoreImmutable bool) C
 }
 
 func GetDescription(revision string) CommandArgs {
-	return []string{"log", "-r", revision, "--template", "description", "--no-graph", "--ignore-working-copy", "--color", "never", "--quiet"}
+	return GetRevisionText(revision, "description")
+}
+
+// GetRevisionText reads a plain template value without graph or terminal formatting.
+func GetRevisionText(revision, template string) CommandArgs {
+	return []string{"log", "-r", revision, "--template", template, "--no-graph", "--ignore-working-copy", "--color", "never", "--quiet"}
 }
 
 func Abandon(revision SelectedRevisions, ignoreImmutable bool, retainBookmarks bool) CommandArgs {
