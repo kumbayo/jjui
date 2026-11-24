@@ -47,23 +47,21 @@ func (s *SplitState) clamp() {
 	}
 }
 
+func (s *SplitState) primarySize(total int) int {
+	return int(float64(total) * (100 - s.Percent) / 100)
+}
+
 func (s *SplitState) DragTo(box layout.Box, vertical bool, x, y int) bool {
-	old := s.Percent
+	total, target := box.R.Dx(), x-box.R.Min.X
 	if vertical {
-		total := box.R.Dy()
-		if total <= 0 {
-			return false
-		}
-		distanceFromBottom := box.R.Max.Y - y
-		s.Percent = float64(distanceFromBottom*100) / float64(total)
-	} else {
-		total := box.R.Dx()
-		if total <= 0 {
-			return false
-		}
-		distanceFromRight := box.R.Max.X - x
-		s.Percent = float64(distanceFromRight*100) / float64(total)
+		total, target = box.R.Dy(), y-box.R.Min.Y
 	}
+	if total <= 0 || target == s.primarySize(total) {
+		return false
+	}
+	old := s.Percent
+	// Aim inside the target cell so rounding cannot move the divider back a cell.
+	s.Percent = (float64(total-target) - 0.5) * 100 / float64(total)
 	s.clamp()
 	return s.Percent != old
 }

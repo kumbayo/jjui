@@ -44,7 +44,6 @@ func (s *SplitRenderer) renderBoth(
 	primary common.ImmediateModel,
 	secondary common.ImmediateModel,
 ) {
-	primaryPercent := 100 - s.state.Percent
 	thickness := s.separatorThickness
 	if thickness <= 0 {
 		thickness = 1
@@ -61,7 +60,8 @@ func (s *SplitRenderer) renderBoth(
 		if thickness > 0 {
 			splitBox.R.Max.Y = splitBox.R.Min.Y + usable
 		}
-		boxes := splitBox.V(layout.Percent(primaryPercent), layout.Fill(1))
+		s.lastBox = splitBox
+		boxes := splitBox.V(layout.Fixed(s.state.primarySize(usable)), layout.Fill(1))
 		if len(boxes) < 2 {
 			return
 		}
@@ -95,7 +95,8 @@ func (s *SplitRenderer) renderBoth(
 	if thickness > 0 {
 		splitBox.R.Max.X = splitBox.R.Min.X + usable
 	}
-	boxes := splitBox.H(layout.Percent(primaryPercent), layout.Fill(1))
+	s.lastBox = splitBox
+	boxes := splitBox.H(layout.Fixed(s.state.primarySize(usable)), layout.Fill(1))
 	if len(boxes) < 2 {
 		return
 	}

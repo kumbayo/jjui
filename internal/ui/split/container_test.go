@@ -4,6 +4,7 @@ import (
 	"testing"
 
 	tea "charm.land/bubbletea/v2"
+	uv "github.com/charmbracelet/ultraviolet"
 	keybindings "github.com/idursun/jjui/internal/ui/bindings"
 	"github.com/idursun/jjui/internal/ui/common"
 	"github.com/idursun/jjui/internal/ui/intents"
@@ -150,6 +151,64 @@ func TestSplitContainerResizeAndPosition(t *testing.T) {
 	assert.False(t, state.AtBottom)
 	sc.SetAutoPosition(true)
 	assert.False(t, state.AtBottom)
+}
+
+func TestSplitContainerDividerFollowsMouseWithoutJumping(t *testing.T) {
+	for _, tc := range []struct {
+		name      string
+		atBottom  bool
+		width     int
+		height    int
+		start     layout.Position
+		direction layout.Position
+		separator string
+	}{
+		{"right", false, 204, 8, layout.Pos(105, 8), layout.Pos(1, 0), "│"},
+		{"bottom", true, 8, 20, layout.Pos(7, 16), layout.Pos(0, 1), "─"},
+	} {
+		t.Run(tc.name, func(t *testing.T) {
+			state := NewSplitState(50)
+			state.AtBottom = tc.atBottom
+			sc := NewSplitContainer(state)
+			sc.RegisterContent("preview", &fakeContent{})
+			_, _ = sc.ShowContent("preview")
+			box := layout.NewBox(layout.Rect(4, 7, tc.width, tc.height))
+			primary := &fakeContent{}
+
+			renderDividerAt := func(pos layout.Position) *render.DisplayContext {
+				t.Helper()
+				dl := render.NewDisplayContext()
+				sc.Render(dl, box, primary)
+				buf := uv.NewScreenBuffer(box.R.Max.X, box.R.Max.Y)
+				dl.Render(buf)
+				require.Equal(t, tc.separator, buf.CellAt(pos.X, pos.Y).Content)
+				return dl
+			}
+
+			dl := renderDividerAt(tc.start)
+			msg, handled := dl.ProcessMouseEvent(tea.MouseClickMsg{X: tc.start.X, Y: tc.start.Y, Button: tea.MouseLeft})
+			require.True(t, handled)
+			drag, ok := msg.(SplitDragMsg)
+			require.True(t, ok)
+			sc.StartDrag(drag)
+			assert.Equal(t, 50.0, state.Percent)
+			renderDividerAt(tc.start)
+
+			require.True(t, sc.DragTo(tc.start.X, tc.start.Y))
+			assert.Equal(t, 50.0, state.Percent)
+			renderDividerAt(tc.start)
+
+			for _, offset := range []int{1, 0, -1} {
+				pos := tc.start.Add(tc.direction.Mul(offset))
+				require.True(t, sc.DragTo(pos.X, pos.Y))
+				renderDividerAt(pos)
+			}
+
+			sc.EndDrag()
+			assert.False(t, sc.DragTo(tc.start.X, tc.start.Y))
+			renderDividerAt(tc.start.Sub(tc.direction))
+		})
+	}
 }
 
 func scopeNames(scopes []common.Scope) []keybindings.ScopeName {
